@@ -20,12 +20,70 @@ List<Restaurant> restaurantList = new List<Restaurant>();
 List<Customer> customerList = new List<Customer>();
 
 Console.WriteLine("Welcome to the Gruberoo Food Delivery System");
+
 LoadRestaurants(restaurantList);
 LoadFoodItems(restaurantList);  
 LoadCustomers(customerList);
-DisplayCustomers(customerList);
+LoadOrders(customerList, restaurantList);
 
-// --------------- DISPLAY METHODS ---------------
+// -------------------- MAIN MENU LOOP --------------------
+
+int option = -1;
+while (option != 0)
+{
+    DisplayMenu();
+    option = Convert.ToInt32(Console.ReadLine());
+
+    if (option == 1)
+    {
+        // DisplayRestaurantsAndMenuItems(restaurantList);
+    }
+    else if (option == 2)
+    {
+        // DisplayOrders(customerList, restaurantList);
+    }
+    else if (option == 3)
+    {
+
+    }
+    else if (option == 4)
+    {
+
+    }
+    else if (option == 5)
+    {
+
+    }
+    else if (option == 6)
+    {
+
+    }
+    else if (option == 0)
+    {
+        Console.WriteLine("Goodbye!");
+    }
+    else
+    {
+        Console.WriteLine("Invalid option! Please try again.");
+    }
+}
+
+// ----------------------- METHODS -----------------------
+
+// Displays the main menu options
+void DisplayMenu()
+{
+    Console.WriteLine();
+    Console.WriteLine("===== Gruberoo Food Delivery System =====");
+    Console.WriteLine("1. List all restaurants and menu items");
+    Console.WriteLine("2. List all orders");
+    Console.WriteLine("3. Create a new order");
+    Console.WriteLine("4. Process an order");
+    Console.WriteLine("5. Modify an existing order");
+    Console.WriteLine("6. Delete an existing order");
+    Console.WriteLine("0. Exit");
+    Console.Write("Enter your choice: ");
+}
 
 // Basic Feature 1: Load restaurants from restaurants.csv
 // Creates Restaurant objects based on the data loaded and stores them into restaurantList
@@ -101,22 +159,6 @@ void LoadFoodItems(List<Restaurant> restaurantList)
     Console.WriteLine(i + " food items loaded!");
 }
 
-// Displays all customers in a formatted table
-void DisplayCustomers(List<Customer> customerList)
-{
-    Console.WriteLine("\nCustomer List");
-    Console.WriteLine("================");
-    Console.WriteLine("\n{0,-5} {1,-20} {2}", "No.", "Customer Name", "Email Address");
-    Console.WriteLine("{0,-5} {1,-20} {2}", "---", "-------------", "-------------");
-
-    int i = 1;
-    foreach (Customer customer in customerList)
-    {
-        Console.WriteLine("{0,-5} {1,-20} {2}", i, customer.CustomerName, customer.EmailAddress);
-        i++;
-    }
-}
-
 // Basic Feature 2: Load customers from customers.csv
 // Creates Customer objects based on the data loaded and stores them into customerList
 void LoadCustomers(List<Customer> customerList)
@@ -153,4 +195,68 @@ void LoadCustomers(List<Customer> customerList)
 
     // Display load confirmation
     Console.WriteLine(i + " customers loaded!");
+}
+
+// Basic Feature 2: Load orders from orders.csv
+// Creates Order objects based on the data loaded
+// Places each Order into the corresponding Restaurant's Order Queue & the corresponding Customer's Order List
+void LoadOrders(List<Customer> customerList, List<Restaurant> restaurantList)
+{
+    int i = 0; // Counter for successfully loaded orders
+
+    using (StreamReader sr = new StreamReader("orders.csv"))
+    {
+        string line;
+
+        // Skip header row
+        sr.ReadLine();
+
+        while ((line = sr.ReadLine()) != null)
+        {
+            string[] parts = line.Split(',');
+
+            // Validation (Skip invalid rows)
+            if (parts.Length < 9)
+            {
+                continue;
+            }
+
+            int orderId = Convert.ToInt32(parts[0].Trim());
+            string customerEmail = parts[1].Trim();
+            string restaurantId = parts[2].Trim();
+            string deliveryAddress = parts[5].Trim();
+            DateTime orderDateTime = Convert.ToDateTime(parts[6].Trim());
+            DateTime deliveryDateTime = Convert.ToDateTime(parts[3].Trim() + " " + parts[4].Trim());
+            double orderTotal = Convert.ToDouble(parts[7].Trim());
+            string orderStatus = parts[8].Trim();
+
+            // Create Order object using data loaded
+            Order o = new Order(orderId, orderDateTime, deliveryDateTime, deliveryAddress, orderStatus,
+                "", false, orderTotal);
+
+            // Add order to the corresponding Customer's Order List
+            foreach (Customer customer in customerList)
+            {
+                if (customer.EmailAddress == customerEmail)
+                {
+                    customer.AddOrder(o);
+                    break;
+                }
+            }
+
+            // Add order to the corresponding Restaurant’s Order Queue
+            foreach (Restaurant restaurant in restaurantList)
+            {
+                if (restaurant.RestaurantId == restaurantId)
+                {
+                    restaurant.OrderQueue.Enqueue(o);
+                    break;
+                }
+            }
+
+            i++; // Increment order count
+        }
+    }
+
+    Console.WriteLine(i + " orders loaded!");
 }
