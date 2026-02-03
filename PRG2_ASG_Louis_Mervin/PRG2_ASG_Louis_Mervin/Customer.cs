@@ -17,7 +17,7 @@ namespace PRG2_ASG_Louis_Mervin
         public string EmailAddress { get; set; }
         public string CustomerName { get; set; }
 
-        public List<Order> OrderList = new List<Order>();
+        public List<Order> OrderList { get; set; } = new List<Order>();
 
         public Customer() { } // Default
         public Customer(string emailAddress, string customerName)
@@ -28,7 +28,10 @@ namespace PRG2_ASG_Louis_Mervin
 
         public void AddOrder(Order o) // Add an order
         {
-            OrderList.Add(o);
+            if (o != null)
+            {
+                OrderList.Add(o);
+            }
         }
 
         public void DisplayAllOrders() // Display all orders

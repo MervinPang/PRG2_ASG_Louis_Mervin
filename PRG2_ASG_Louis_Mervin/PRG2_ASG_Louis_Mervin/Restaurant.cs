@@ -18,9 +18,9 @@ namespace PRG2_ASG_Louis_Mervin
         public string RestaurantName { get; set; }
         public string RestaurantEmail { get; set; }
 
-        public Queue<Order> OrderQueue = new Queue<Order>();
-        public List<SpecialOffer> SpecialOfferList = new List<SpecialOffer>();
-        public List<Menu> MenuList = new List<Menu>();
+        public Queue<Order> OrderQueue { get; set; } = new Queue<Order>();
+        public List<SpecialOffer> SpecialOfferList { get; set; } = new List<SpecialOffer>();
+        public List<Menu> MenuList { get; set; } = new List<Menu>();
 
         public Restaurant() { } // Default
         public Restaurant(string restaurantId, string restaurantName, string restaurantEmail)
@@ -54,14 +54,17 @@ namespace PRG2_ASG_Louis_Mervin
             }
         }
 
-        public void AddMenu(Menu menu) // Add a menu
+        public void AddMenu(Menu m) // Add a menu
         {
-            MenuList.Add(menu);
+            if (m != null)
+            {
+                MenuList.Add(m);
+            }
         }
 
-        public bool RemoveMenu(Menu menu) // Remove a menu
+        public bool RemoveMenu(Menu m) // Remove a menu
         {
-            return MenuList.Remove(menu);
+            return MenuList.Remove(m);
         }
 
         public override string ToString()
