@@ -125,12 +125,18 @@ void LoadFoodItems(List<Restaurant> restaurantList)
     int i = 0;
     using (StreamReader sr = new StreamReader("fooditems.csv"))
     {
-        sr.ReadLine(); // skip header row
         string line;
+        sr.ReadLine(); // skip header row
 
         while ((line = sr.ReadLine()) != null)
         {
             string[] parts = line.Split(',');
+
+            // Validation
+            if (parts.Length < 4)
+            {
+                continue;
+            }
 
             string restaurantId = parts[0].Trim();
             string itemName = parts[1].Trim();
