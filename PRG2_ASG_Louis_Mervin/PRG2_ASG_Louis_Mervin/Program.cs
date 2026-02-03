@@ -32,15 +32,24 @@ int option = -1;
 while (option != 0)
 {
     DisplayMenu();
-    option = Convert.ToInt32(Console.ReadLine());
+
+    try
+    {
+        option = Convert.ToInt32(Console.ReadLine());
+    }
+    catch
+    {
+        Console.WriteLine("Invalid option! Please enter a number.");
+        continue; // Prevents second invalid message
+    }
 
     if (option == 1)
     {
-        // DisplayRestaurantsAndMenuItems(restaurantList);
+
     }
     else if (option == 2)
     {
-        // DisplayOrders(customerList, restaurantList);
+        
     }
     else if (option == 3)
     {
@@ -227,40 +236,49 @@ void LoadOrders(List<Customer> customerList, List<Restaurant> restaurantList)
                 continue;
             }
 
-            int orderId = Convert.ToInt32(parts[0].Trim());
-            string customerEmail = parts[1].Trim();
-            string restaurantId = parts[2].Trim();
-            string deliveryAddress = parts[5].Trim();
-            DateTime orderDateTime = Convert.ToDateTime(parts[6].Trim());
-            DateTime deliveryDateTime = Convert.ToDateTime(parts[3].Trim() + " " + parts[4].Trim());
-            double orderTotal = Convert.ToDouble(parts[7].Trim());
-            string orderStatus = parts[8].Trim();
-
-            // Create Order object using data loaded
-            Order o = new Order(orderId, orderDateTime, deliveryDateTime, deliveryAddress, orderStatus,
-                "", false, orderTotal);
-
-            // Add order to the corresponding Customer's Order List
-            foreach (Customer customer in customerList)
+            // Read and convert values (with basic error handling)
+            try
             {
-                if (customer.EmailAddress == customerEmail)
-                {
-                    customer.AddOrder(o);
-                    break;
-                }
-            }
+                int orderId = Convert.ToInt32(parts[0].Trim());
+                string customerEmail = parts[1].Trim();
+                string restaurantId = parts[2].Trim();
+                string deliveryAddress = parts[5].Trim();
+                DateTime orderDateTime = Convert.ToDateTime(parts[6].Trim());
+                DateTime deliveryDateTime = Convert.ToDateTime(parts[3].Trim() + " " + parts[4].Trim());
+                double orderTotal = Convert.ToDouble(parts[7].Trim());
+                string orderStatus = parts[8].Trim();
 
-            // Add order to the corresponding Restaurant’s Order Queue
-            foreach (Restaurant restaurant in restaurantList)
+                // Create Order object using data loaded
+                Order o = new Order(orderId, orderDateTime, deliveryDateTime, deliveryAddress, orderStatus,
+                    "", false, orderTotal);
+
+                // Add order to the corresponding Customer's Order List
+                foreach (Customer customer in customerList)
+                {
+                    if (customer.EmailAddress == customerEmail)
+                    {
+                        customer.AddOrder(o);
+                        break;
+                    }
+                }
+
+                // Add order to the corresponding Restaurant’s Order Queue
+                foreach (Restaurant restaurant in restaurantList)
+                {
+                    if (restaurant.RestaurantId == restaurantId)
+                    {
+                        restaurant.OrderQueue.Enqueue(o);
+                        break;
+                    }
+                }
+
+                i++; // Increment order count
+            }
+            catch
             {
-                if (restaurant.RestaurantId == restaurantId)
-                {
-                    restaurant.OrderQueue.Enqueue(o);
-                    break;
-                }
+                // If the row has invalid date/number format, skip it to prevent crashing
+                continue;
             }
-
-            i++; // Increment order count
         }
     }
 
