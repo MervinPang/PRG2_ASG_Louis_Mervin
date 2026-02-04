@@ -1,17 +1,26 @@
 ﻿using PRG2_ASG_Louis_Mervin;
 
 //==========================================================
+// Student Number : S10268761B (Basic Feature 1)
+// Student Name   : Louis Ng Bo Lin
+// Partner Name   : Pang Wy Zen Mervin
+//==========================================================
+
+// Checkpoint 1 - Implemented Features:
+// - Load restaurants from restaurants.csv and create Restaurant objects
+// - Load orders from fooditems.csv
+// - Create FoodItem objects and assign them to their respective restaurants
+
+//==========================================================
 // Student Number : S10275479D (Basic Feature 2)
 // Student Name   : Pang Wy Zen Mervin
 // Partner Name   : Louis Ng Bo Lin
 //==========================================================
-//
+
 // Checkpoint 1 - Implemented Features:
 // - Load customers from customers.csv and create Customer objects
 // - Load orders from orders.csv
 // - Create Order objects and place them into: Restaurant’s Order Queue & Customer’s Order List
-// - Display customer list in formatted table
-// - Display all orders with basic information
 
 // Stores all Restaurant objects loaded from restaurants.csv
 List<Restaurant> restaurantList = new List<Restaurant>();
