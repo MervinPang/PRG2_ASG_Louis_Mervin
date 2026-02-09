@@ -1,7 +1,7 @@
 ﻿using PRG2_ASG_Louis_Mervin;
 
 //==========================================================
-// Student Number : S10268761B (Basic Feature 1)
+// Student Number : S10268761B (Basic Feature 1, 4, 6, 8)
 // Student Name   : Louis Ng Bo Lin
 // Partner Name   : Pang Wy Zen Mervin
 //==========================================================
@@ -12,7 +12,7 @@
 // - Create FoodItem objects and assign them to their respective restaurants
 
 //==========================================================
-// Student Number : S10275479D (Basic Feature 2)
+// Student Number : S10275479D (Basic Feature 2, 3, 5, 7)
 // Student Name   : Pang Wy Zen Mervin
 // Partner Name   : Louis Ng Bo Lin
 //==========================================================
@@ -54,7 +54,8 @@ while (option != 0)
 
     if (option == 1)
     {
-
+        Console.WriteLine();
+        DisplayRestaurantsAndMenuItems(restaurantList);
     }
     else if (option == 2)
     {
@@ -91,7 +92,6 @@ while (option != 0)
 // Displays the main menu options
 void DisplayMenu()
 {
-    Console.WriteLine();
     Console.WriteLine("===== Gruberoo Food Delivery System =====");
     Console.WriteLine("1. List all restaurants and menu items");
     Console.WriteLine("2. List all orders");
@@ -292,6 +292,35 @@ void LoadOrders(List<Customer> customerList, List<Restaurant> restaurantList)
     }
 
     Console.WriteLine(i + " orders loaded!");
+    Console.WriteLine();
+}
+
+// Basic Feature 3: List all restaurants and menu items
+// Displays each restaurant's details followed by all food items (name, description, price)
+void DisplayRestaurantsAndMenuItems(List<Restaurant> restaurantList)
+{
+    // Title header
+    Console.WriteLine("All Restaurants and Menu Items");
+    Console.WriteLine("==============================");
+
+    // Loop through each menu in the restaurant
+    foreach (Restaurant r in restaurantList)
+    {
+        // Display restaurant name and Id
+        Console.WriteLine("Restaurant: " + r.RestaurantName + " (" + r.RestaurantId + ")");
+
+        // Loop through each menu in the restaurant
+        foreach (Menu m in r.MenuList)
+        {
+            // Loop through each food item in the menu
+            foreach (FoodItem fi in m.FoodItemList)
+            {
+                Console.WriteLine("  - " + fi.ItemName + ": " + fi.ItemDesc + " - $" + fi.ItemPrice.ToString("0.00"));
+            }
+        }
+
+        Console.WriteLine();
+    }
 }
 
 // Basic Feature 4: List all orders with basic information
