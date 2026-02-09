@@ -58,7 +58,7 @@ while (option != 0)
     }
     else if (option == 2)
     {
-        
+        DisplayOrders(customerList, restaurantList);
     }
     else if (option == 3)
     {
@@ -292,4 +292,63 @@ void LoadOrders(List<Customer> customerList, List<Restaurant> restaurantList)
     }
 
     Console.WriteLine(i + " orders loaded!");
+}
+
+// Basic Feature 4: List all orders with basic information
+// Displays all orders from all restaurants and customers
+// Sorts customer orders by order ID in ascending order
+void DisplayOrders(List<Customer> customerList, List<Restaurant> restaurantList)
+{
+    // Collect all orders
+    List<Order> orders = new List<Order>();
+    foreach (Restaurant r in restaurantList)
+    {
+        foreach (Order o in r.OrderQueue)
+        {
+            orders.Add(o);
+        }
+    }
+
+    // Sort by order ID by ascending
+    orders.Sort((a, b) => a.OrderId.CompareTo(b.OrderId));
+
+    Console.WriteLine("\nAll Orders");
+    Console.WriteLine("==========");
+    Console.WriteLine("{0,-10} {1,-15} {2,-15} {3,-20} {4,-10} {5}", "Order ID", "Customer", "Restaurant", "Delivery Date/Time", "Amount", "Status");
+    Console.WriteLine("{0,-10} {1,-15} {2,-15} {3,-20} {4,-10} {5}", "--------", "----------", "-------------", "------------------", "------", "---------");
+
+    // Display orders
+    foreach (Order o in orders)
+    {
+        string customerName = "";
+        string restaurantName = "";
+
+        foreach (Customer c in customerList)
+        {
+            if (c.OrderList.Contains(o))
+            {
+                customerName = c.CustomerName;
+                break;
+            }
+        }
+
+        foreach (Restaurant r in restaurantList)
+        {
+            if (r.OrderQueue.Contains(o))
+            {
+                restaurantName = r.RestaurantName;
+                break;
+            }
+        }
+
+        Console.WriteLine(
+            "{0,-10} {1,-15} {2,-15} {3,-20} ${4,-9:F2} {5}",
+            o.OrderId,
+            customerName,
+            restaurantName,
+            o.DeliveryDateTime.ToString("dd/MM/yyyy HH:mm"),
+            o.OrderTotal,
+            o.OrderStatus
+        );
+    }
 }
