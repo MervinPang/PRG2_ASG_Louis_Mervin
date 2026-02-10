@@ -846,7 +846,7 @@ void ProcessOrder(List<Restaurant> restaurantList, List<Customer> customerList, 
     Console.Write("Enter Restaurant ID: ");
     string restaurantId = Console.ReadLine().Trim();
 
-    // Find restaurant
+    // Find restaurant (use RestaurantList)
     Restaurant selectedRestaurant = null;
     foreach (Restaurant r in restaurantList)
     {
@@ -887,35 +887,31 @@ void ProcessOrder(List<Restaurant> restaurantList, List<Customer> customerList, 
             }
         }
 
-        // Display basic order info
+        // Display order info
         Console.WriteLine($"\nOrder {order.OrderId}:");
         Console.WriteLine($"Customer: {customerName}");
 
         Console.WriteLine("Ordered Items:");
         if (order.OrderedFoodItemList != null && order.OrderedFoodItemList.Count > 0)
         {
-            int itemNo = 1;
-            foreach (OrderedFoodItem of in order.OrderedFoodItemList)
-            {
-                Console.WriteLine($"{itemNo}. {of.ItemName} - {of.QtyOrdered}");
-                itemNo++;
-            }
+            order.DisplayOrderedFoodItems();
         }
         else
         {
             Console.WriteLine("Items not loaded yet");
         }
 
-        Console.WriteLine($"Delivery date/time: {order.DeliveryDateTime.ToString("dd/MM/yyyy HH:mm")}");
-        Console.WriteLine($"Total Amount: ${order.OrderTotal.ToString("0.00")}");
+        Console.WriteLine($"Delivery date/time: {order.DeliveryDateTime:dd/MM/yyyy HH:mm}");
+        Console.WriteLine($"Total Amount: ${order.OrderTotal:0.00}");
         Console.WriteLine($"Order Status: {order.OrderStatus}");
 
-        // Prompt the user
+        // Prompt
         Console.Write("[C]onfirm / [R]eject / [S]kip / [D]eliver: ");
         string choice = Console.ReadLine().Trim().ToUpper();
 
         if (choice == "C")
         {
+            // Confirm only if Pending
             if (order.OrderStatus == "Pending")
             {
                 order.OrderStatus = "Preparing";
@@ -923,7 +919,7 @@ void ProcessOrder(List<Restaurant> restaurantList, List<Customer> customerList, 
             }
             else
             {
-                Console.WriteLine("Order pending");
+                Console.WriteLine("Confirm failed");
             }
         }
         else if (choice == "R")
@@ -932,11 +928,11 @@ void ProcessOrder(List<Restaurant> restaurantList, List<Customer> customerList, 
             {
                 order.OrderStatus = "Rejected";
                 refundStack.Push(order);
-                Console.WriteLine($"Order {order.OrderId} rejected. Refund of ${order.OrderTotal:0.00} processed");
+                Console.WriteLine($"Order {order.OrderId} rejected. Refund of ${order.OrderTotal:0.00} processed.");
             }
             else
             {
-                Console.WriteLine("Order pending");
+                Console.WriteLine("Reject failed");
             }
         }
         else if (choice == "S")
@@ -947,7 +943,7 @@ void ProcessOrder(List<Restaurant> restaurantList, List<Customer> customerList, 
             }
             else
             {
-                Console.WriteLine("Order is already cancelled");
+                Console.WriteLine("Skip failed");
             }
         }
         else if (choice == "D")
@@ -959,15 +955,15 @@ void ProcessOrder(List<Restaurant> restaurantList, List<Customer> customerList, 
             }
             else
             {
-                Console.WriteLine("Order is preparing");
+                Console.WriteLine("Deliver failed");
             }
         }
         else
         {
-            Console.WriteLine("Invalid choice");
+            Console.WriteLine("Invalid choice.");
         }
 
+        // Put the order back into the queue
         selectedRestaurant.OrderQueue.Enqueue(order);
     }
 }
-
