@@ -103,6 +103,12 @@ while (option != 0)
         Console.WriteLine();
         BulkProcessPendingOrdersToday(restaurantList, refundStack);
     }
+    else if (option == 8)
+    {
+        Console.WriteLine();
+        DisplayRestaurantOrderSummary(restaurantList);
+
+    }
     else if (option == 0)
     {
         SaveAllRestaurantQueues(restaurantList);
@@ -174,6 +180,7 @@ void DisplayMenu()
     Console.WriteLine("5. Modify an existing order");
     Console.WriteLine("6. Delete an existing order");
     Console.WriteLine("7. Bulk process pending orders for today");
+    Console.WriteLine("8. Display restaurant order summary");
     Console.WriteLine("0. Exit");
     Console.Write("Enter your choice: ");
 }
