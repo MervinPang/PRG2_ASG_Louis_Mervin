@@ -1,11 +1,4 @@
 ﻿using PRG2_ASG_Louis_Mervin;
-using System.Collections.Generic;
-using System.ComponentModel;
-using System.ComponentModel.DataAnnotations;
-using System.Diagnostics.Metrics;
-using System.Runtime.Intrinsics.X86;
-using System.Threading.Channels;
-using System.Threading.Tasks;
 
 //===========================================================
 // Student Number : S10268761B (Basic Feature 1, 4, 6, 8, A)
