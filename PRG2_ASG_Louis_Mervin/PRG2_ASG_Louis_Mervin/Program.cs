@@ -62,6 +62,7 @@ while (option != 0)
     }
     else if (option == 2)
     {
+        Console.WriteLine();
         DisplayOrders(customerList, restaurantList);
     }
     else if (option == 3)
@@ -71,6 +72,7 @@ while (option != 0)
     }
     else if (option == 4)
     {
+        Console.WriteLine();
         ProcessOrder(restaurantList, customerList, refundStack);
     }
     else if (option == 5)
@@ -398,62 +400,30 @@ void DisplayRestaurantsAndMenuItems(List<Restaurant> restaurantList)
 
 // Basic Feature 4: List all orders with basic information
 // Displays all orders from all restaurants and customers
-// Sorts customer orders by order ID in ascending order
 void DisplayOrders(List<Customer> customerList, List<Restaurant> restaurantList)
 {
-    // Collect all orders
-    List<Order> orders = new List<Order>();
-    foreach (Restaurant r in restaurantList)
-    {
-        foreach (Order o in r.OrderQueue)
-        {
-            orders.Add(o);
-        }
-    }
-
-    // Sort by order ID by ascending
-    orders.Sort((a, b) => a.OrderId.CompareTo(b.OrderId));
-
     Console.WriteLine("\nAll Orders");
     Console.WriteLine("==========");
     Console.WriteLine("{0,-10} {1,-15} {2,-15} {3,-20} {4,-10} {5}", "Order ID", "Customer", "Restaurant", "Delivery Date/Time", "Amount", "Status");
     Console.WriteLine("{0,-10} {1,-15} {2,-15} {3,-20} {4,-10} {5}", "--------", "----------", "-------------", "------------------", "------", "---------");
 
-    // Display orders
-    foreach (Order o in orders)
+    foreach (Customer c in customerList)
     {
-        string customerName = "";
-        string restaurantName = "";
-
-        foreach (Customer c in customerList)
+        foreach (Order o in c.OrderList)
         {
-            if (c.OrderList.Contains(o))
+            // Find restaurant name
+            string restaurantName = "";
+            foreach (Restaurant r in restaurantList)
             {
-                customerName = c.CustomerName;
-                break;
+                if (r.OrderQueue.Contains(o))
+                {
+                    restaurantName = r.RestaurantName;
+                    break;
+                }
             }
+            Console.WriteLine("{0,-10} {1,-15} {2,-15} {3,-20} ${4,-9:0.00} {5}", o.OrderId, c.CustomerName, restaurantName, o.DeliveryDateTime.ToString("dd/MM/yyyy HH:mm"), o.OrderTotal, o.OrderStatus);
         }
-
-        foreach (Restaurant r in restaurantList)
-        {
-            if (r.OrderQueue.Contains(o))
-            {
-                restaurantName = r.RestaurantName;
-                break;
-            }
-        }
-
-        Console.WriteLine(
-            "{0,-10} {1,-15} {2,-15} {3,-20} ${4,-9:F2} {5}",
-            o.OrderId,
-            customerName,
-            restaurantName,
-            o.DeliveryDateTime.ToString("dd/MM/yyyy HH:mm"),
-            o.OrderTotal,
-            o.OrderStatus
-        );
     }
-    Console.WriteLine();
 }
 
 // Basic Feature 5: Create a New Order
@@ -1000,3 +970,4 @@ void ProcessOrder(List<Restaurant> restaurantList, List<Customer> customerList, 
         selectedRestaurant.OrderQueue.Enqueue(order);
     }
 }
+
