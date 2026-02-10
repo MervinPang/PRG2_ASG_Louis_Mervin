@@ -7,33 +7,40 @@ using System.Runtime.Intrinsics.X86;
 using System.Threading.Channels;
 using System.Threading.Tasks;
 
-//==========================================================
-// Student Number : S10268761B (Basic Feature 1, 4, 6, 8)
+//===========================================================
+// Student Number : S10268761B (Basic Feature 1, 4, 6, 8, A)
 // Student Name   : Louis Ng Bo Lin
 // Partner Name   : Pang Wy Zen Mervin
-//==========================================================
+//===========================================================
 
 // Checkpoint 1 - Implemented Features:
 // - Load restaurants from restaurants.csv and create Restaurant objects
 // - Load orders from fooditems.csv
 // - Create FoodItem objects and assign them to their respective restaurants
 
-// Checkpoint 2 - Implemented Features:
+// Final Submission - Implemented Features:
 // - List all orders with basic information
 // - Process an order
 // - Delete an existing order
 // - Bulk process pending orders for today
 
-//==========================================================
-// Student Number : S10275479D (Basic Feature 2, 3, 5, 7)
+//===========================================================
+// Student Number : S10275479D (Basic Feature 2, 3, 5, 7, B)
 // Student Name   : Pang Wy Zen Mervin
 // Partner Name   : Louis Ng Bo Lin
-//==========================================================
+//===========================================================
 
 // Checkpoint 1 - Implemented Features:
 // - Load customers from customers.csv and create Customer objects
 // - Load orders from orders.csv
 // - Create Order objects and place them into: Restaurant’s Order Queue & Customer’s Order List
+
+// Final Submission - Implemented Features:
+// - Loaded customers and orders from CSV files
+// - Created Order objects and stored them in Restaurant queues and Customer order lists
+// - Displayed all restaurants and their menu items
+// - Created new orders with item selection, payment and status update
+// - Modified existing pending orders with validation and payment handling
 
 // Stores all Restaurant objects loaded from restaurants.csv
 List<Restaurant> restaurantList = new List<Restaurant>();
@@ -90,6 +97,7 @@ while (option != 0)
     }
     else if (option == 5)
     {
+        Console.WriteLine();
         ModifyExistingOrder(customerList, restaurantList);
     }
     else if (option == 6)
@@ -104,11 +112,57 @@ while (option != 0)
     }
     else if (option == 0)
     {
-        Console.WriteLine("Goodbye!");
+        SaveAllRestaurantQueues(restaurantList);
+        SaveAllRestaurantStacks(restaurantList);
+
+        Console.WriteLine("Queue and stack saved. Goodbye!");
+        break;
     }
     else
     {
         Console.WriteLine("Invalid option! Please try again.");
+    }
+}
+
+void SaveAllRestaurantQueues(List<Restaurant> restaurantList)
+{
+    using (StreamWriter sw = new StreamWriter("queue.csv"))
+    {
+        sw.WriteLine("RestaurantId,OrderId,OrderStatus,OrderTotal");
+
+        foreach (Restaurant r in restaurantList)
+        {
+            foreach (Order o in r.OrderQueue)
+            {
+                sw.WriteLine(
+                    r.RestaurantId + "," +
+                    o.OrderId + "," +
+                    o.OrderStatus + "," +
+                    o.OrderTotal.ToString("0.00")
+                );
+            }
+        }
+    }
+}
+
+void SaveAllRestaurantStacks(List<Restaurant> restaurantList)
+{
+    using (StreamWriter sw = new StreamWriter("stack.csv"))
+    {
+        sw.WriteLine("RestaurantId,OrderId,OrderStatus,OrderTotal");
+
+        foreach (Restaurant r in restaurantList)
+        {
+            foreach (Order o in refundStack)
+            {
+                sw.WriteLine(
+                    r.RestaurantId + "," +
+                    o.OrderId + "," +
+                    o.OrderStatus + "," +
+                    o.OrderTotal.ToString("0.00")
+                );
+            }
+        }
     }
 }
 
@@ -980,7 +1034,7 @@ void ProcessOrder(List<Restaurant> restaurantList, List<Customer> customerList, 
     }
 }
 
-// Basic Feature 7:
+// Basic Feature 7: Modify an existing pending order for a customer
 // Update One order row inside orders.csv by matching OrderId
 // Read all lines first
 // Overwrites the file and replaces only the matching order row
@@ -1028,7 +1082,7 @@ void UpdateOrderInCsv(string filePath, Order selectedOrder)
             parts[4] = selectedOrder.DeliveryDateTime.ToString("HH:mm");
             parts[5] = selectedOrder.DeliveryAddress;
             parts[7] = selectedOrder.OrderTotal.ToString("0.00");
-            parts[9] = BuildItemsField(selectedOrder);
+            parts[9] = UpdateItemsColumn(selectedOrder);
 
             // Rebuild the CSV row back into a single line
             string updatedLine = "";
@@ -1073,7 +1127,7 @@ string UpdateItemsColumn(Order order)
     return "\"" + items + "\"";
 }
 
-// Basic Feature 7: Modify an existing pending order for a customer
+// Modify an existing pending order for a customer
 void ModifyExistingOrder(List<Customer> customerList, List<Restaurant> restaurantList)
 {
     Console.WriteLine("\nModify Order");
@@ -1704,4 +1758,61 @@ void BulkProcessPendingOrdersToday(List<Restaurant> restaurantList, Stack<Order>
 
     double percentage = (processed * 100.0) / totalPendingToday;
     Console.WriteLine($"Automatically processed orders percentage: {percentage.ToString("0.00")}%");
+}
+
+// Advanced Feature (B)
+// Displays total order amount and refunds for each restaurant
+// Then displays overall totals and final amount earned by Gruberoo
+void DisplayRestaurantOrderSummary(List<Restaurant> restaurantList)
+{
+    // Delivery fee charged per order
+    double deliveryFee = 5.00;
+
+    // Overall totals across all restaurants
+    double grandTotalOrders = 0;
+    double grandTotalRefunds = 0;
+
+    Console.WriteLine("\nRestaurant Order Summary");
+    Console.WriteLine("========================");
+
+    // Loop through each restaurant
+    foreach (Restaurant r in restaurantList)
+    {
+        double restaurantOrderTotal = 0;
+        double restaurantRefundTotal = 0;
+
+        // Loop through all orders for this restaurant
+        foreach (Order o in r.OrderQueue)
+        {
+            // Successful orders (Delivered)
+            if (o.OrderStatus == "Delivered")
+            {
+                // Subtract delivery fee from each order
+                restaurantOrderTotal += (o.OrderTotal - deliveryFee);
+            }
+            // Refunded orders
+            else if (o.OrderStatus == "Refunded")
+            {
+                restaurantRefundTotal += o.OrderTotal;
+            }
+        }
+
+        // Display totals for this restaurant
+        Console.WriteLine("\nRestaurant: " + r.RestaurantName + " (" + r.RestaurantId + ")");
+        Console.WriteLine("Total Order Amount (excluding delivery): $" + restaurantOrderTotal.ToString("0.00"));
+        Console.WriteLine("Total Refunds: $" + restaurantRefundTotal.ToString("0.00"));
+
+        // Add to overall totals
+        grandTotalOrders += restaurantOrderTotal;
+        grandTotalRefunds += restaurantRefundTotal;
+    }
+
+    // Display overall summary after processing all restaurants
+    Console.WriteLine("\n========================");
+    Console.WriteLine("Overall Summary");
+    Console.WriteLine("========================");
+    Console.WriteLine("Total Order Amount: $" + grandTotalOrders.ToString("0.00"));
+    Console.WriteLine("Total Refunds: $" + grandTotalRefunds.ToString("0.00"));
+    Console.WriteLine("Final Amount Gruberoo Earns: $" + (grandTotalOrders - grandTotalRefunds).ToString("0.00"));
+    Console.WriteLine();
 }
