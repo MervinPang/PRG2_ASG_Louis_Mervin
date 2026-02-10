@@ -383,6 +383,7 @@ void DisplayOrders(List<Customer> customerList, List<Restaurant> restaurantList)
             o.OrderStatus
         );
     }
+    Console.WriteLine();
 }
 
 // Basic Feature 6: Process an order
