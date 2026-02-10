@@ -28,6 +28,9 @@ List<Restaurant> restaurantList = new List<Restaurant>();
 // Stores all Customer objects loaded from customers.csv
 List<Customer> customerList = new List<Customer>();
 
+// Stack to store refunded orders
+Stack<Order> refundStack = new Stack<Order>();
+
 Console.WriteLine("Welcome to the Gruberoo Food Delivery System");
 
 LoadRestaurants(restaurantList);
@@ -67,7 +70,7 @@ while (option != 0)
     }
     else if (option == 4)
     {
-
+        ProcessOrder(restaurantList, customerList, refundStack);
     }
     else if (option == 5)
     {
@@ -379,5 +382,140 @@ void DisplayOrders(List<Customer> customerList, List<Restaurant> restaurantList)
             o.OrderTotal,
             o.OrderStatus
         );
+    }
+}
+
+// Basic Feature 6: Process an order
+// Prompts user to enter a restaurant ID, then displays the orders in that restaurant's queue in order
+// For each order, prompts user to confirm, reject, skip or deliver the order
+void ProcessOrder(List<Restaurant> restaurantList, List<Customer> customerList, Stack<Order> refundStack)
+{
+    Console.WriteLine("\nProcess Order");
+    Console.WriteLine("=============");
+    Console.Write("Enter Restaurant ID: ");
+    string restaurantId = Console.ReadLine().Trim();
+
+    // Find restaurant
+    Restaurant selectedRestaurant = null;
+    foreach (Restaurant r in restaurantList)
+    {
+        if (r.RestaurantId == restaurantId)
+        {
+            selectedRestaurant = r;
+            break;
+        }
+    }
+
+    if (selectedRestaurant == null)
+    {
+        Console.WriteLine("Restaurant not found");
+        return;
+    }
+
+    if (selectedRestaurant.OrderQueue.Count == 0)
+    {
+        Console.WriteLine("No orders in this restaurant's queue");
+        return;
+    }
+
+    int count = selectedRestaurant.OrderQueue.Count;
+
+    // Loop through queue in order
+    for (int i = 0; i < count; i++)
+    {
+        Order order = selectedRestaurant.OrderQueue.Dequeue();
+
+        // Find customer name
+        string customerName = "";
+        foreach (Customer c in customerList)
+        {
+            if (c.OrderList.Contains(order))
+            {
+                customerName = c.CustomerName;
+                break;
+            }
+        }
+
+        // Display basic order info
+        Console.WriteLine($"\nOrder {order.OrderId}:");
+        Console.WriteLine($"Customer: {customerName}");
+
+        Console.WriteLine("Ordered Items:");
+        if (order.OrderedFoodItemList != null && order.OrderedFoodItemList.Count > 0)
+        {
+            int itemNo = 1;
+            foreach (OrderedFoodItem of in order.OrderedFoodItemList)
+            {
+                Console.WriteLine($"{itemNo}. {of.ItemName} - {of.QtyOrdered}");
+                itemNo++;
+            }
+        }
+        else
+        {
+            Console.WriteLine("Items not loaded yet");
+        }
+
+        Console.WriteLine($"Delivery date/time: {order.DeliveryDateTime.ToString("dd/MM/yyyy HH:mm")}");
+        Console.WriteLine($"Total Amount: ${order.OrderTotal.ToString("0.00")}");
+        Console.WriteLine($"Order Status: {order.OrderStatus}");
+
+        // Prompt the user
+        Console.Write("[C]onfirm / [R]eject / [S]kip / [D]eliver: ");
+        string choice = Console.ReadLine().Trim().ToUpper();
+
+        if (choice == "C")
+        {
+            if (order.OrderStatus == "Pending")
+            {
+                order.OrderStatus = "Preparing";
+                Console.WriteLine($"Order {order.OrderId} confirmed. Status: Preparing");
+            }
+            else
+            {
+                Console.WriteLine("Order pending");
+            }
+        }
+        else if (choice == "R")
+        {
+            if (order.OrderStatus == "Pending")
+            {
+                order.OrderStatus = "Rejected";
+                refundStack.Push(order);
+                Console.WriteLine($"Order {order.OrderId} rejected. Refund of ${order.OrderTotal:0.00} processed");
+            }
+            else
+            {
+                Console.WriteLine("Order pending");
+            }
+        }
+        else if (choice == "S")
+        {
+            if (order.OrderStatus == "Cancelled")
+            {
+                Console.WriteLine($"Order {order.OrderId} skipped. Status: Skipped");
+            }
+            else
+            {
+                Console.WriteLine("Order is already cancelled");
+            }
+        }
+        else if (choice == "D")
+        {
+            if (order.OrderStatus == "Preparing")
+            {
+                order.OrderStatus = "Delivered";
+                Console.WriteLine($"Order {order.OrderId} delivered. Status: Delivered");
+            }
+            else
+            {
+                Console.WriteLine("Order is preparing");
+            }
+        }
+        else
+        {
+            Console.WriteLine("Invalid choice");
+        }
+
+        selectedRestaurant.OrderQueue.Enqueue(order);
     }
 }
