@@ -678,8 +678,9 @@ void CreateNewOrder(List<Customer> customerList, List<Restaurant> restaurantList
     // Select Food Items
     while (true)
     {
-        int itemNo;
         Console.Write("Enter item number (0 to finish): ");
+        int itemNo;
+
         try
         {
             itemNo = Convert.ToInt32(Console.ReadLine());
@@ -690,10 +691,7 @@ void CreateNewOrder(List<Customer> customerList, List<Restaurant> restaurantList
             continue;
         }
 
-        if (itemNo == 0)
-        {
-            break;
-        }
+        if (itemNo == 0) break;
 
         if (itemNo < 1 || itemNo > menuItems.Count)
         {
@@ -701,8 +699,9 @@ void CreateNewOrder(List<Customer> customerList, List<Restaurant> restaurantList
             continue;
         }
 
-        int qty;
         Console.Write("Enter quantity: ");
+        int qty;
+
         try
         {
             qty = Convert.ToInt32(Console.ReadLine());
@@ -734,7 +733,12 @@ void CreateNewOrder(List<Customer> customerList, List<Restaurant> restaurantList
     Console.Write("Add special request? [Y/N]: ");
     string special = Console.ReadLine();
 
-    if (special == "Y" || special == "y")
+    if (special != null)
+    {
+        special = special.Trim().ToUpper();
+    }
+
+    if (special == "Y")
     {
         string specialRequest = "";
 
@@ -760,7 +764,6 @@ void CreateNewOrder(List<Customer> customerList, List<Restaurant> restaurantList
     double itemsTotal = newOrder.CalculateOrderTotal();
     double deliveryFee = 5.00;
     double finalTotal = itemsTotal + deliveryFee;
-
     newOrder.OrderTotal = finalTotal;
 
     Console.WriteLine("\nOrder Total: $" + itemsTotal.ToString("0.00") + " + $" +
@@ -770,9 +773,12 @@ void CreateNewOrder(List<Customer> customerList, List<Restaurant> restaurantList
     Console.Write("Proceed to payment? [Y/N]: ");
     string pay = Console.ReadLine();
 
-    if (special != null) special = special.Trim();
+    if (pay != null)
+    {
+        pay = pay.Trim().ToUpper();
+    }
 
-    if (pay != "Y" && pay != "y")
+    if (pay != "Y")
     {
         return;
     }
@@ -791,19 +797,11 @@ void CreateNewOrder(List<Customer> customerList, List<Restaurant> restaurantList
             continue;
         }
 
-        pmInput = pmInput.Trim();
+        pmInput = pmInput.Trim().ToUpper();
 
-        if (pmInput == "CC" || pmInput == "cc")
+        if (pmInput == "CC" || pmInput == "PP" || pmInput == "CD")
         {
-            paymentMethod = "CC";
-        }
-        else if (pmInput == "PP" || pmInput == "pp")
-        {
-            paymentMethod = "PP";
-        }
-        else if (pmInput == "CD" || pmInput == "cd")
-        {
-            paymentMethod = "CD";
+            paymentMethod = pmInput;
         }
         else
         {
@@ -812,9 +810,7 @@ void CreateNewOrder(List<Customer> customerList, List<Restaurant> restaurantList
     }
 
     // Finalise Order
-    int newOrderId = GetNextOrderId(customerList);
-
-    newOrder.OrderId = newOrderId;
+    newOrder.OrderId = GetNextOrderId(customerList);
     newOrder.OrderDateTime = DateTime.Now;
     newOrder.OrderStatus = "Pending";
     newOrder.OrderPaymentMethod = paymentMethod;
@@ -828,26 +824,21 @@ void CreateNewOrder(List<Customer> customerList, List<Restaurant> restaurantList
     string itemsString = "";
     foreach (OrderedFoodItem item in newOrder.OrderedFoodItemList)
     {
-        if (itemsString.Length > 0)
-            itemsString += "|";
-
-        itemsString += $"{item.ItemName},{item.QtyOrdered}";
+        if (itemsString.Length > 0) itemsString += "|";
+        itemsString += item.ItemName + "," + item.QtyOrdered;
     }
 
-    string orderLine =
-        $"{newOrder.OrderId},{selectedCustomer.EmailAddress},{selectedRestaurant.RestaurantId}," +
-        $"{newOrder.DeliveryDateTime:dd/MM/yyyy},{newOrder.DeliveryDateTime:HH:mm}," +
-        $"\"{newOrder.DeliveryAddress}\"," +
-        $"{newOrder.OrderDateTime:dd/MM/yyyy HH:mm}," +
-        $"{newOrder.OrderTotal:0.00},{newOrder.OrderStatus}," +
-        $"\"{itemsString}\"";
+    string orderLine = newOrder.OrderId + "," + selectedCustomer.EmailAddress + "," + selectedRestaurant.RestaurantId + "," +
+        newOrder.DeliveryDateTime.ToString("dd/MM/yyyy") + "," + newOrder.DeliveryDateTime.ToString("HH:mm") + "," +
+        newOrder.DeliveryAddress + "," + newOrder.OrderDateTime.ToString("dd/MM/yyyy HH:mm") + "," +
+        newOrder.OrderTotal.ToString("0.00") + "," + newOrder.OrderStatus + "," + "\"" + itemsString + "\"";
 
     using (StreamWriter sw = new StreamWriter("orders.csv", true))
     {
         sw.WriteLine(orderLine);
     }
 
-    Console.WriteLine("\nOrder " + newOrderId + " created successfully! Status: Pending");
+    Console.WriteLine("\nOrder " + newOrder.OrderId + " created successfully! Status: Pending");
     Console.WriteLine();
 }
 
