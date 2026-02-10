@@ -1,4 +1,5 @@
 ﻿using PRG2_ASG_Louis_Mervin;
+using System.Collections.Generic;
 
 //==========================================================
 // Student Number : S10268761B (Basic Feature 1, 4, 6, 8)
@@ -81,7 +82,8 @@ while (option != 0)
     }
     else if (option == 6)
     {
-
+        Console.WriteLine();
+        DeleteOrder(customerList, restaurantList, refundStack);
     }
     else if (option == 0)
     {
@@ -966,4 +968,124 @@ void ProcessOrder(List<Restaurant> restaurantList, List<Customer> customerList, 
         // Put the order back into the queue
         selectedRestaurant.OrderQueue.Enqueue(order);
     }
+}
+
+// Basic Feature 8: Delete an existing order
+// Only pending orders can be deleted 
+void DeleteOrder(List<Customer> customerList, List<Restaurant> restaurantList, Stack<Order> refundStack)
+{
+    Console.WriteLine("\nDelete Order");
+    Console.WriteLine("============");
+    Console.Write("Enter Customer Email: ");
+    string email = Console.ReadLine().Trim();
+
+    // Find customer
+    Customer selectedCustomer = null;
+    foreach (Customer c in customerList)
+    {
+        if (c.EmailAddress == email)
+        {
+            selectedCustomer = c;
+            break;
+        }
+    }
+
+    if (selectedCustomer == null)
+    {
+        Console.WriteLine("Customer not found");
+        return;
+    }
+
+    // Show pending orders for that customer
+    Console.WriteLine("Pending Orders:");
+    bool hasPending = false;
+
+    if (!hasPending)
+    {
+        Console.WriteLine("No pending orders found");
+        return;
+    }
+
+    Console.Write("Enter Order ID: ");
+    int orderId;
+
+    try
+    {
+        orderId = Convert.ToInt32(Console.ReadLine());
+    }
+    catch
+    {
+        Console.WriteLine("Invalid order ID");
+        return;
+    }
+
+    // Find the order in customer's list
+    Order selectedOrder = null;
+    foreach (Order o in selectedCustomer.OrderList)
+    {
+        if (o.OrderId == orderId)
+        {
+            selectedOrder = o;
+            break;
+        }
+    }
+
+    if (selectedOrder == null)
+    {
+        Console.WriteLine("Order ID not found for this customer");
+        return;
+    }
+
+    // Must be pending to delete
+    if (selectedOrder.OrderStatus != "Pending")
+    {
+        Console.WriteLine("Only pending orders can be deleted");
+        return;
+    }
+
+    // Display order info
+    Console.WriteLine($"\nCustomer: {selectedCustomer.CustomerName}");
+    Console.WriteLine("Ordered Items:");
+
+    if (selectedOrder.OrderedFoodItemList != null && selectedOrder.OrderedFoodItemList.Count > 0)
+    {
+        selectedOrder.DisplayOrderedFoodItems();
+    }
+    else
+    {
+        Console.WriteLine("Items not loaded yet");
+    }
+
+    Console.WriteLine($"Delivery date/time: {selectedOrder.DeliveryDateTime:dd/MM/yyyy HH:mm}");
+    Console.WriteLine($"Total Amount: ${selectedOrder.OrderTotal:0.00}");
+    Console.WriteLine($"Order Status: {selectedOrder.OrderStatus}");
+
+    Console.Write("\nConfirm deletion? [Y/N]: ");
+    string confirm = Console.ReadLine().Trim().ToUpper();
+
+    if (confirm != "Y")
+    {
+        Console.WriteLine("Deletion cancelled");
+        return;
+    }
+
+    selectedOrder.OrderStatus = "Cancelled";
+    refundStack.Push(selectedOrder);
+    selectedCustomer.RemoveOrder(selectedOrder);
+
+    foreach (Restaurant r in restaurantList)
+    {
+        int qCount = r.OrderQueue.Count;
+
+        for (int i = 0; i < qCount; i++)
+        {
+            Order current = r.OrderQueue.Dequeue();
+            if (current != selectedOrder)
+            {
+                r.OrderQueue.Enqueue(current);
+            }
+        }
+    }
+
+    Console.WriteLine($"Order {selectedOrder.OrderId} cancelled and removed. Refund of ${selectedOrder.OrderTotal:0.00} processed.");
 }
