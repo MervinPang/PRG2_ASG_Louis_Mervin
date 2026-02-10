@@ -124,6 +124,7 @@ while (option != 0)
     }
 }
 
+// After exit is chosen, informations are saved in queue.csv
 void SaveAllRestaurantQueues(List<Restaurant> restaurantList)
 {
     using (StreamWriter sw = new StreamWriter("queue.csv"))
@@ -145,6 +146,7 @@ void SaveAllRestaurantQueues(List<Restaurant> restaurantList)
     }
 }
 
+// After exit is chosen, informations are saved in stack.csv
 void SaveAllRestaurantStacks(List<Restaurant> restaurantList)
 {
     using (StreamWriter sw = new StreamWriter("stack.csv"))
