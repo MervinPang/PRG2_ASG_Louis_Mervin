@@ -1791,7 +1791,7 @@ void DisplayRestaurantOrderSummary(List<Restaurant> restaurantList)
                 restaurantOrderTotal += (o.OrderTotal - deliveryFee);
             }
             // Refunded orders
-            else if (o.OrderStatus == "Refunded")
+            else if (o.OrderStatus == "Refunded" || o.OrderStatus == "Cancelled")
             {
                 restaurantRefundTotal += o.OrderTotal;
             }
