@@ -13,6 +13,12 @@ using System.Threading.Tasks;
 // - Load orders from fooditems.csv
 // - Create FoodItem objects and assign them to their respective restaurants
 
+// Checkpoint 2 - Implemented Features:
+// - List all orders with basic information
+// - Process an order
+// - Delete an existing order
+// - Bulk process pending orders for today
+
 //==========================================================
 // Student Number : S10275479D (Basic Feature 2, 3, 5, 7)
 // Student Name   : Pang Wy Zen Mervin
@@ -928,7 +934,7 @@ void ProcessOrder(List<Restaurant> restaurantList, List<Customer> customerList, 
             }
             else
             {
-                Console.WriteLine("Confirm failed");
+                Console.WriteLine("Confirmation failed");
             }
         }
         else if (choice == "R")
@@ -1006,6 +1012,15 @@ void DeleteOrder(List<Customer> customerList, List<Restaurant> restaurantList, S
     // Show pending orders for that customer
     Console.WriteLine("Pending Orders:");
     bool hasPending = false;
+
+    foreach (Order o in selectedCustomer.OrderList)
+    {
+        if (o.OrderStatus == "Pending")
+        {
+            Console.WriteLine(o.OrderId);
+            hasPending = true;
+        }
+    }
 
     if (!hasPending)
     {
