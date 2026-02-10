@@ -456,11 +456,44 @@ void DisplayOrders(List<Customer> customerList, List<Restaurant> restaurantList)
     Console.WriteLine();
 }
 
+// Basic Feature 5: Create a New Order
+// Allows user to:
+// Select customer and restaurant
+// Choose delivery date/time and address
+// Select food items and quantities
+// Add special request
+// Choose payment method
+// Save order to memory and orders.csv
+
+/* Generates the next available Order ID by finding the
+   maximum existing OrderId among all customers orders
+   and returns maxId + 1 */
+int GetNextOrderId(List<Customer> customerList)
+{
+    int maxId = 0;
+
+    // Loop through all customers
+    foreach (Customer c in customerList)
+    {
+        // Loop through each customer's orders
+        foreach (Order o in c.OrderList)
+        {
+            if (o.OrderId > maxId)
+            {
+                maxId = o.OrderId;
+            }
+        }
+    }
+
+    return maxId + 1;
+}
+
 void CreateNewOrder(List<Customer> customerList, List<Restaurant> restaurantList)
 {
     Console.WriteLine("Create New Order");
     Console.WriteLine("================");
 
+    // Select Customer by Email
     Customer selectedCustomer = null;
     while (selectedCustomer == null)
     {
@@ -480,6 +513,7 @@ void CreateNewOrder(List<Customer> customerList, List<Restaurant> restaurantList
             continue;
         }
 
+        // Find matching customer (case-insensitive)
         foreach (Customer c in customerList)
         {
             if (c.EmailAddress.ToLower() == email.ToLower())
@@ -495,6 +529,7 @@ void CreateNewOrder(List<Customer> customerList, List<Restaurant> restaurantList
         }
     }
 
+    // Select Restaurant by ID
     Restaurant selectedRestaurant = null;
     while (selectedRestaurant == null)
     {
@@ -514,6 +549,7 @@ void CreateNewOrder(List<Customer> customerList, List<Restaurant> restaurantList
             continue;
         }
 
+        // Find matching restaurant (case-insensitive)
         foreach (Restaurant r in restaurantList)
         {
             if (r.RestaurantId.ToLower() == restId.ToLower())
@@ -529,6 +565,7 @@ void CreateNewOrder(List<Customer> customerList, List<Restaurant> restaurantList
         }
     }
 
+    // Input Delivery Date
     DateTime deliveryDate;
     while (true)
     {
@@ -548,6 +585,14 @@ void CreateNewOrder(List<Customer> customerList, List<Restaurant> restaurantList
             continue;
         }
 
+        // Format validation
+        string[] parts = date.Split('/');
+        if (parts.Length != 3)
+        {
+            Console.WriteLine("Invalid date. Please enter in dd/mm/yyyy.");
+            continue;
+        }
+
         try
         {
             deliveryDate = Convert.ToDateTime(date);
@@ -559,6 +604,7 @@ void CreateNewOrder(List<Customer> customerList, List<Restaurant> restaurantList
         }
     }
 
+    // Input Delivery Time
     TimeSpan deliveryTime;
     while (true)
     {
@@ -578,6 +624,14 @@ void CreateNewOrder(List<Customer> customerList, List<Restaurant> restaurantList
             continue;
         }
 
+        // Format validation
+        string[] tparts = time.Split(':');
+        if (tparts.Length != 2)
+        {
+            Console.WriteLine("Invalid time. Please enter hh:mm.");
+            continue;
+        }
+
         try
         {
             deliveryTime = TimeSpan.Parse(time);
@@ -591,6 +645,7 @@ void CreateNewOrder(List<Customer> customerList, List<Restaurant> restaurantList
 
     DateTime deliveryDateTime = deliveryDate.Date + deliveryTime;
 
+    // Input Delivery Address
     string deliveryAddress = "";
     while (deliveryAddress == "")
     {
@@ -613,30 +668,29 @@ void CreateNewOrder(List<Customer> customerList, List<Restaurant> restaurantList
         deliveryAddress = address;
     }
 
-    if (selectedRestaurant.MenuList.Count == 0)
+    // Validate Menu Availability
+    if (selectedRestaurant.MenuList.Count == 0 ||
+        selectedRestaurant.MenuList[0].FoodItemList.Count == 0)
     {
-        Console.WriteLine("No menu found for this restaurant. Unable to create order.");
-        return;
-    }
-
-    if (selectedRestaurant.MenuList[0].FoodItemList.Count == 0)
-    {
-        Console.WriteLine("No food items found for this restaurant. Unable to create order.");
+        Console.WriteLine("No food items found for this restaurant.");
         return;
     }
 
     List<FoodItem> menuItems = selectedRestaurant.MenuList[0].FoodItemList;
 
-    Console.WriteLine("Available Food Items:");
+    // Display Menu Items
+    Console.WriteLine("\nAvailable Food Items:");
     for (int i = 0; i < menuItems.Count; i++)
     {
         Console.WriteLine((i + 1) + ". " + menuItems[i].ItemName + " - $" + menuItems[i].ItemPrice.ToString("0.00"));
     }
 
+    // Create Order Object
     Order newOrder = new Order();
     newOrder.DeliveryDateTime = deliveryDateTime;
     newOrder.DeliveryAddress = deliveryAddress;
 
+    // Select Food Items
     while (true)
     {
         int itemNo;
@@ -691,6 +745,7 @@ void CreateNewOrder(List<Customer> customerList, List<Restaurant> restaurantList
         return;
     }
 
+    // Special Request (Optional)
     Console.Write("Add special request? [Y/N]: ");
     string special = Console.ReadLine();
 
@@ -716,24 +771,28 @@ void CreateNewOrder(List<Customer> customerList, List<Restaurant> restaurantList
         }
     }
 
+    // Calculate Total Cost
     double itemsTotal = newOrder.CalculateOrderTotal();
     double deliveryFee = 5.00;
     double finalTotal = itemsTotal + deliveryFee;
 
     newOrder.OrderTotal = finalTotal;
 
-    Console.WriteLine("Order Total: $" + itemsTotal.ToString("0.00") + " + $" +
+    Console.WriteLine("\nOrder Total: $" + itemsTotal.ToString("0.00") + " + $" +
         deliveryFee.ToString("0.00") + " (delivery) = $" + finalTotal.ToString("0.00"));
 
+    // Payment Method
     Console.Write("Proceed to payment? [Y/N]: ");
     string pay = Console.ReadLine();
+
+    if (special != null) special = special.Trim();
 
     if (pay != "Y" && pay != "y")
     {
         return;
     }
 
-    Console.WriteLine("Payment method:");
+    Console.WriteLine("\nPayment method:");
     string paymentMethod = "";
 
     while (paymentMethod == "")
@@ -767,21 +826,44 @@ void CreateNewOrder(List<Customer> customerList, List<Restaurant> restaurantList
         }
     }
 
+    // Finalise Order
     int newOrderId = GetNextOrderId(customerList);
 
     newOrder.OrderId = newOrderId;
     newOrder.OrderDateTime = DateTime.Now;
     newOrder.OrderStatus = "Pending";
     newOrder.OrderPaymentMethod = paymentMethod;
-    newOrder.OrderPaid = true;
+    newOrder.OrderPaid = false;
 
     // Add to restaurant queue and customer list
     selectedRestaurant.OrderQueue.Enqueue(newOrder);
     selectedCustomer.AddOrder(newOrder);
 
-    AppendOrderToCsv(newOrder, selectedCustomer.EmailAddress, selectedRestaurant.RestaurantId);
+    // Append Order to CSV
+    string itemsString = "";
+    foreach (OrderedFoodItem item in newOrder.OrderedFoodItemList)
+    {
+        if (itemsString.Length > 0)
+            itemsString += "|";
 
-    Console.WriteLine("Order " + newOrderId + " created successfully! Status: Pending");
+        itemsString += $"{item.ItemName},{item.QtyOrdered}";
+    }
+
+    string orderLine =
+        $"{newOrder.OrderId},{selectedCustomer.EmailAddress},{selectedRestaurant.RestaurantId}," +
+        $"{newOrder.DeliveryDateTime:dd/MM/yyyy},{newOrder.DeliveryDateTime:HH:mm}," +
+        $"\"{newOrder.DeliveryAddress}\"," +
+        $"{newOrder.OrderDateTime:dd/MM/yyyy HH:mm}," +
+        $"{newOrder.OrderTotal:0.00},{newOrder.OrderStatus}," +
+        $"\"{itemsString}\"";
+
+    using (StreamWriter sw = new StreamWriter("orders.csv", true))
+    {
+        sw.WriteLine(orderLine);
+    }
+
+    Console.WriteLine("\nOrder " + newOrderId + " created successfully! Status: Pending");
+    Console.WriteLine();
 }
 
 // Basic Feature 6: Process an order
