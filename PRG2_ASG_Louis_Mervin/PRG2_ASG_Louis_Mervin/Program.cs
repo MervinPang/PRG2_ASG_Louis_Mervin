@@ -1,5 +1,6 @@
 ﻿using PRG2_ASG_Louis_Mervin;
 using System.Collections.Generic;
+using System.Threading.Tasks;
 
 //==========================================================
 // Student Number : S10268761B (Basic Feature 1, 4, 6, 8)
@@ -85,6 +86,11 @@ while (option != 0)
         Console.WriteLine();
         DeleteOrder(customerList, restaurantList, refundStack);
     }
+    else if (option == 7)
+    {
+        Console.WriteLine();
+        BulkProcessPendingOrdersToday(restaurantList, refundStack);
+    }
     else if (option == 0)
     {
         Console.WriteLine("Goodbye!");
@@ -107,6 +113,7 @@ void DisplayMenu()
     Console.WriteLine("4. Process an order");
     Console.WriteLine("5. Modify an existing order");
     Console.WriteLine("6. Delete an existing order");
+    Console.WriteLine("7. Bulk process pending orders for today");
     Console.WriteLine("0. Exit");
     Console.Write("Enter your choice: ");
 }
@@ -1088,4 +1095,81 @@ void DeleteOrder(List<Customer> customerList, List<Restaurant> restaurantList, S
     }
 
     Console.WriteLine($"Order {selectedOrder.OrderId} cancelled and removed. Refund of ${selectedOrder.OrderTotal:0.00} processed.");
+}
+
+// Advanced Feature (a): Bulk processing of unprocessed orders for a current day
+// For all restaurants, process all pending orders for today
+void BulkProcessPendingOrdersToday(List<Restaurant> restaurantList, Stack<Order> refundStack)
+{
+    Console.WriteLine("\nBulk Process Pending Orders Today");
+    Console.WriteLine("=================================");
+
+    DateTime now = DateTime.Now;
+    int totalPendingToday = 0;
+
+    foreach (Restaurant r in restaurantList)
+    {
+        foreach (Order o in r.OrderQueue)
+        {
+            if (o.OrderStatus == "Pending" && o.DeliveryDateTime.Date == now.Date)
+            {
+                totalPendingToday++;
+            }
+        }
+    }
+
+    Console.WriteLine($"Total pending orders today: {totalPendingToday}");
+
+    if (totalPendingToday == 0)
+    {
+        Console.WriteLine("No pending orders to process");
+        return;
+    }
+
+    int processed = 0;
+    int preparing = 0;
+    int rejected = 0;
+
+    // Process each restaurant queue
+    foreach (Restaurant r in restaurantList)
+    {
+        int qCount = r.OrderQueue.Count;
+
+        for (int i = 0; i < qCount; i++)
+        {
+            Order o = r.OrderQueue.Dequeue();
+
+            if (o.OrderStatus == "Pending" && o.DeliveryDateTime.Date == now.Date)
+            {
+                TimeSpan timeLeft = o.DeliveryDateTime - now;
+
+                if (timeLeft.TotalMinutes < 60)
+                {
+                    o.OrderStatus = "Rejected";
+                    refundStack.Push(o);
+                    rejected++;
+                }
+                else
+                {
+                    o.OrderStatus = "Preparing";
+                    preparing++;
+                }
+
+                processed++;
+            }
+
+            // Put order back to keep queue data
+            r.OrderQueue.Enqueue(o);
+        }
+    }
+
+    // Summary output
+    Console.WriteLine("\nSummary");
+    Console.WriteLine("-------");
+    Console.WriteLine($"Orders processed: {processed}");
+    Console.WriteLine($"Preparing: {preparing}");
+    Console.WriteLine($"Rejected: {rejected}");
+
+    double percentage = (processed * 100.0) / totalPendingToday;
+    Console.WriteLine($"Automatically processed orders percentage: {percentage.ToString("0.00")}%");
 }
